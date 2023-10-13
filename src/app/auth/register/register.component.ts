@@ -1,5 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
+import { AuthService } from '../auth.service';
 
 @Component({
   selector: 'app-register',
@@ -9,7 +11,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 export class RegisterComponent implements OnInit, OnDestroy {
   formRegister: FormGroup = new FormGroup({});
 
-  constructor(private fb: FormBuilder) {}
+  constructor(private fb: FormBuilder, private authService: AuthService,  private router: Router) {}
 
   ngOnInit(): void {
     this.formRegister = this.fb.group({
@@ -30,6 +32,17 @@ export class RegisterComponent implements OnInit, OnDestroy {
 
     const { fullName, email, password } = this.formRegister.value;
 
-    console.log({ fullName, email, password });
+    this.authService.register(fullName, email, password).subscribe((res: any) => {
+
+      localStorage.setItem('userData', JSON.stringify(res));
+
+      this.authService.setToken(res.token);
+
+      if (this.authService.isLoggedIn()) {
+        this.router.navigate(['/notes']);
+      }
+
+    });
+
   }
 }
